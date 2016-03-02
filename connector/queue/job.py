@@ -464,7 +464,8 @@ class Job(object):
         with session.change_user(self.user_id):
             self.retry += 1
             try:
-                self.result = self.func(session, *self.args, **self.kwargs)
+                with session.change_context({'job_uuid': self._uuid}):
+                    self.result = self.func(session, *self.args, **self.kwargs)
             except RetryableJobError:
                 if not self.max_retries:  # infinite retries
                     raise
